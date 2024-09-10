@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 
 void clear(int n){
     for(int i = 0;i < n;i++){
@@ -33,14 +34,18 @@ void gestao_estudantes(){
         scanf("%d", &input);
         switch (input) {
             case 1:
+                char data[10], dia[2], mes[2], ano[4];
                 struct estudante estudante_cadastrado;
                 clear(20);
-                printf("Digite o nome do Estudante:\n");
                 estudante_cadastrado.ID = 1;
+                printf("Digite o nome do Estudante:\n");
                 scanf("%s", &estudante_cadastrado.nome);
-                estudante_cadastrado.nascimento.dia = 25;
-                estudante_cadastrado.nascimento.mes = 13;
-                estudante_cadastrado.nascimento.ano = 1998;
+                printf("Digite a data de nascimento do Estudante no formato DD/MM/AAAA:\n");
+                scanf("%s", &data);
+                dia[0] = data[0];
+                dia[1] = data[1];
+                printf("%s", dia);
+
                 FILE *f;
                 f = fopen("../estudantes.bin", "ab");
                 if (f == NULL) {
@@ -63,7 +68,7 @@ void gestao_estudantes(){
                         clear(20);
                         printf("ID: %d\n", estudantes.ID);
                         printf("nome: %s\n", estudantes.nome);
-                        printf("ID: %d/%d/%d\n", estudantes.nascimento.dia, estudantes.nascimento.mes, estudantes.nascimento.ano);
+                        printf("Data de nascimento: %d/%d/%d\n", estudantes.nascimento.dia, estudantes.nascimento.mes, estudantes.nascimento.ano);
                         printf("\nPressione Enter para continuar\n");
                         char pausar[20];
                         scanf("%[^\n]", pausar);
@@ -72,10 +77,42 @@ void gestao_estudantes(){
                 fclose(f);
                 break;
             case 3:
-                gestao_disciplinas();
                 break;
             case 4:
-                gestao_turmas();
+                bool nomesiguais;
+                char nome2[100];
+                struct estudante estudantes2[10];
+                clear(20);
+                printf("Digite o nome do Estudante que deseja excluir:\n");
+                scanf("%s", &nome2);
+                f = fopen("../estudantes.bin", "rb");
+                int i = 0;
+                while (fread(&estudantes2[i], sizeof(struct estudante), 1, f) == 1) {
+                    i++;
+                }
+                fclose(f);
+                f = fopen("../estudantes.bin", "wb");
+                for (i = 0; i < (sizeof(estudantes2)/sizeof(estudantes2[0])); i++) {
+                    nomesiguais = true;
+                    if (strlen(nome2) == strlen(estudantes2[i].nome)) {
+                        for (int i2 = 0; i2 < strlen(nome2); i2++) {
+                            if (nome2[i2] != estudantes2[i].nome[i2]){
+                                nomesiguais = false;
+                                break;
+                            }
+                        }
+                    }
+                    else {
+                        nomesiguais = false;
+                    }
+                    printf("%s\n", nome2);
+                    printf("%s\n", estudantes2[i].nome);
+                    printf("%d\n", nomesiguais);
+                    if (nomesiguais == false) {
+                        fwrite(&estudantes2[i], sizeof(estudantes2[i]), 1, f);
+                    }
+                }
+                fclose(f);
                 break;
         }
         if(input == 5){
