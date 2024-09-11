@@ -32,21 +32,56 @@ void gestao_estudantes(){
         printf("(3) Atualizar Estudante   (4) Excluir Estudante\n");
         printf("(5) Sair da Gestao\n");
         scanf("%d", &input);
+        FILE *f;
+        f = fopen("../estudantes.bin", "rb");
+
+        // Definições de variáveis para o switch
+        int i = 0, quantidade_de_estudantes = 100;
+        char nome[100];
+        char pausar[20];
+        struct estudante estudantes[quantidade_de_estudantes];
+        int c;
+        while ((c = getchar()) != '\n' && c != EOF);
+        while (fread(&estudantes[i], sizeof(struct estudante), 1, f) == 1) {
+            i++;
+        }
+        fclose(f);
+
         switch (input) {
             case 1:
-                char data[10], dia[2], mes[2], ano[4];
+                char data[10], *token, delimitador[2] = "/";
+                char *endptr;
+                long int dia, mes, ano;
                 struct estudante estudante_cadastrado;
                 clear(20);
-                estudante_cadastrado.ID = 1;
-                printf("Digite o nome do Estudante:\n");
+                for (i = 0; i < quantidade_de_estudantes; i++) {
+                    if (estudantes[i].ID == 0) {
+                        break;
+                    }
+                }
+                estudante_cadastrado.ID = estudantes[i-1].ID+1;
+                printf("Digite o nome do Estudante que deseja cadastrar:\n");
                 scanf("%s", &estudante_cadastrado.nome);
                 printf("Digite a data de nascimento do Estudante no formato DD/MM/AAAA:\n");
                 scanf("%s", &data);
-                dia[0] = data[0];
-                dia[1] = data[1];
-                printf("%s", dia);
 
-                FILE *f;
+                token = strtok(data, delimitador);
+                const char *stringlegal1 = token;
+                dia = strtol(stringlegal1, &endptr, 10);
+                estudante_cadastrado.nascimento.dia = dia;
+                token = strtok(NULL, delimitador);
+                const char *stringlegal2 = token;
+                mes = strtol(stringlegal2, &endptr, 10);
+                estudante_cadastrado.nascimento.mes = mes;
+                token = strtok(NULL, delimitador);
+                const char *stringlegal3 = token;
+                ano = strtol(stringlegal3, &endptr, 10);
+                estudante_cadastrado.nascimento.ano = ano;
+
+                printf("\nEstudante cadastrado no ID: %d\n", estudante_cadastrado.ID);
+                printf("Pressione Enter para continuar\n");
+                while ((c = getchar()) != '\n' && c != EOF);
+                scanf("%[^\n]", pausar);
                 f = fopen("../estudantes.bin", "ab");
                 if (f == NULL) {
                     perror("Erro ao abrir o arquivo");
@@ -55,48 +90,39 @@ void gestao_estudantes(){
                 fclose(f);
                 break;
             case 2:
-                char nome[100];
-                struct estudante estudantes;
                 clear(20);
-                printf("Digite o nome do Estudante:\n");
+                printf("Digite o nome do Estudante que deseja consultar:\n");
                 scanf("%s", &nome);
-                int c;
-                while ((c = getchar()) != '\n' && c != EOF);
-                f = fopen("../estudantes.bin", "rb");
-                while (fread(&estudantes, sizeof(struct estudante), 1, f) == 1) {
-                    if (!strcmp(nome, estudantes.nome)) {
+                for (i = 0; i < (sizeof(estudantes)/sizeof(estudantes[0])); i++) {
+                    if (estudantes[i].ID == 0) {
+                        break;
+                    }
+                    if (!strcmp(nome, estudantes[i].nome)) {
                         clear(20);
-                        printf("ID: %d\n", estudantes.ID);
-                        printf("nome: %s\n", estudantes.nome);
-                        printf("Data de nascimento: %d/%d/%d\n", estudantes.nascimento.dia, estudantes.nascimento.mes, estudantes.nascimento.ano);
+                        printf("ID: %d\n", estudantes[i].ID);
+                        printf("nome: %s\n", estudantes[i].nome);
+                        printf("Data de nascimento: %d/%d/%d\n", estudantes[i].nascimento.dia, estudantes[i].nascimento.mes, estudantes[i].nascimento.ano);
                         printf("\nPressione Enter para continuar\n");
-                        char pausar[20];
+                        while ((c = getchar()) != '\n' && c != EOF);
                         scanf("%[^\n]", pausar);
+                        break;
                     }
                 }
-                fclose(f);
                 break;
             case 3:
                 break;
             case 4:
                 bool nomesiguais;
-                char nome2[100];
-                struct estudante estudantes2[10];
                 clear(20);
                 printf("Digite o nome do Estudante que deseja excluir:\n");
-                scanf("%s", &nome2);
-                f = fopen("../estudantes.bin", "rb");
-                int i = 0;
-                while (fread(&estudantes2[i], sizeof(struct estudante), 1, f) == 1) {
-                    i++;
-                }
-                fclose(f);
+                scanf("%s", &nome);
                 f = fopen("../estudantes.bin", "wb");
-                for (i = 0; i < (sizeof(estudantes2)/sizeof(estudantes2[0])); i++) {
+                for (i = 0; i < quantidade_de_estudantes; i++) {
                     nomesiguais = true;
-                    if (strlen(nome2) == strlen(estudantes2[i].nome)) {
-                        for (int i2 = 0; i2 < strlen(nome2); i2++) {
-                            if (nome2[i2] != estudantes2[i].nome[i2]){
+                    if (strlen(nome) == strlen(estudantes[i].nome)) {
+                        int i2;
+                        for (i2 = 0; i2 < strlen(nome); i2++) {
+                            if (nome[i2] != estudantes[i].nome[i2]){
                                 nomesiguais = false;
                                 break;
                             }
@@ -105,11 +131,11 @@ void gestao_estudantes(){
                     else {
                         nomesiguais = false;
                     }
-                    printf("%s\n", nome2);
-                    printf("%s\n", estudantes2[i].nome);
-                    printf("%d\n", nomesiguais);
+                    if (estudantes[i].ID == 0) {
+                        break;
+                    }
                     if (nomesiguais == false) {
-                        fwrite(&estudantes2[i], sizeof(estudantes2[i]), 1, f);
+                        fwrite(&estudantes[i], sizeof(estudantes[i]), 1, f);
                     }
                 }
                 fclose(f);
@@ -134,16 +160,12 @@ void gestao_professores(){
         scanf("%d", &input);
         switch (input) {
             case 1:
-                gestao_estudantes();
                 break;
             case 2:
-                gestao_professores();
                 break;
             case 3:
-                gestao_disciplinas();
                 break;
             case 4:
-                gestao_turmas();
                 break;
         }
         if(input == 5){
@@ -165,16 +187,12 @@ void gestao_disciplinas(){
         scanf("%d", &input);
         switch (input) {
             case 1:
-                gestao_estudantes();
                 break;
             case 2:
-                gestao_professores();
                 break;
             case 3:
-                gestao_disciplinas();
                 break;
             case 4:
-                gestao_turmas();
                 break;
         }
         if(input == 5){
@@ -196,16 +214,12 @@ void gestao_turmas(){
         scanf("%d", &input);
         switch (input) {
             case 1:
-                gestao_estudantes();
                 break;
             case 2:
-                gestao_professores();
                 break;
             case 3:
-                gestao_disciplinas();
                 break;
             case 4:
-                gestao_turmas();
                 break;
         }
         if(input == 5){
