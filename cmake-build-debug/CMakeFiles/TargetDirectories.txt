@@ -1,4 +1,3 @@
 C:/Users/vinis/CLionProjects/Escola/cmake-build-debug/CMakeFiles/GERENCIADOR_ESCOLA.dir
-C:/Users/vinis/CLionProjects/Escola/cmake-build-debug/CMakeFiles/TESTE.C.dir
 C:/Users/vinis/CLionProjects/Escola/cmake-build-debug/CMakeFiles/edit_cache.dir
 C:/Users/vinis/CLionProjects/Escola/cmake-build-debug/CMakeFiles/rebuild_cache.dir

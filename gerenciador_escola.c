@@ -9,6 +9,22 @@ void clear(int n){
     }
 }
 
+bool comparar_string(char str1[], char str2[]) {
+    bool stringsiguais = true;
+    if (strlen(str1) == strlen(str2)) {
+        for (int i = 0; i < strlen(str1); i++) {
+            if (str1[i] != str2[i]){
+                stringsiguais = false;
+                break;
+            }
+        }
+    }
+    else {
+        stringsiguais = false;
+    }
+    return stringsiguais;
+}
+
 struct data{
     int dia;
     int mes;
@@ -32,16 +48,20 @@ void gestao_estudantes(){
         printf("(3) Atualizar Estudante   (4) Excluir Estudante\n");
         printf("(5) Sair da Gestao\n");
         scanf("%d", &input);
-        FILE *f;
-        f = fopen("../estudantes.bin", "rb");
 
         // Definições de variáveis para o switch
         int i = 0, quantidade_de_estudantes = 100;
-        char nome[100];
+        char id_ou_nome[100];
+        int id_ou_nome_int;
+        char *endptr;
         char pausar[20];
+        char data[10], *token, delimitador[2] = "/";
         struct estudante estudantes[quantidade_de_estudantes];
         int c;
-        while ((c = getchar()) != '\n' && c != EOF);
+        bool nomesiguais;
+        bool idsiguais;
+        FILE *f;
+        f = fopen("../estudantes.bin", "rb");
         while (fread(&estudantes[i], sizeof(struct estudante), 1, f) == 1) {
             i++;
         }
@@ -49,8 +69,6 @@ void gestao_estudantes(){
 
         switch (input) {
             case 1:
-                char data[10], *token, delimitador[2] = "/";
-                char *endptr;
                 long int dia, mes, ano;
                 struct estudante estudante_cadastrado;
                 clear(20);
@@ -91,46 +109,128 @@ void gestao_estudantes(){
                 break;
             case 2:
                 clear(20);
-                printf("Digite o nome do Estudante que deseja consultar:\n");
-                scanf("%s", &nome);
-                for (i = 0; i < (sizeof(estudantes)/sizeof(estudantes[0])); i++) {
-                    if (estudantes[i].ID == 0) {
-                        break;
+                printf("Digite o ID ou o nome do Estudante que deseja consultar:\n");
+                scanf("%s", &id_ou_nome);
+                id_ou_nome_int = strtol(id_ou_nome, &endptr, 10);
+                //Consultar a partir de um nome
+                if (*endptr != '\0') {
+                    for (i = 0; i < (sizeof(estudantes) / sizeof(estudantes[0])); i++) {
+                        if (estudantes[i].ID == 0) {
+                            break;
+                        }
+                        printf("%d", i);
+                        if (!strcmp(id_ou_nome, estudantes[i].nome)) {
+                            clear(20);
+                            printf("ID: %d\n", estudantes[i].ID);
+                            printf("nome: %s\n", estudantes[i].nome);
+                            printf("Data de nascimento: %d/%d/%d\n", estudantes[i].nascimento.dia,
+                                   estudantes[i].nascimento.mes, estudantes[i].nascimento.ano);
+                            printf("\nPressione Enter para continuar\n");
+                            while ((c = getchar()) != '\n' && c != EOF);
+                            scanf("%[^\n]", pausar);
+                            break;
+                        }
                     }
-                    if (!strcmp(nome, estudantes[i].nome)) {
-                        clear(20);
-                        printf("ID: %d\n", estudantes[i].ID);
-                        printf("nome: %s\n", estudantes[i].nome);
-                        printf("Data de nascimento: %d/%d/%d\n", estudantes[i].nascimento.dia, estudantes[i].nascimento.mes, estudantes[i].nascimento.ano);
-                        printf("\nPressione Enter para continuar\n");
-                        while ((c = getchar()) != '\n' && c != EOF);
-                        scanf("%[^\n]", pausar);
-                        break;
+                }
+                //Consultar a partir de um ID
+                else {
+                    for (i = 0; i < (sizeof(estudantes) / sizeof(estudantes[0])); i++) {
+                        if (estudantes[i].ID == 0) {
+                            break;
+                        }
+                        printf("%d", i);
+                        if (id_ou_nome_int == estudantes[i].ID) {
+                            clear(20);
+                            printf("ID: %d\n", estudantes[i].ID);
+                            printf("nome: %s\n", estudantes[i].nome);
+                            printf("Data de nascimento: %d/%d/%d\n", estudantes[i].nascimento.dia,
+                                   estudantes[i].nascimento.mes, estudantes[i].nascimento.ano);
+                            printf("\nPressione Enter para continuar\n");
+                            while ((c = getchar()) != '\n' && c != EOF);
+                            scanf("%[^\n]", pausar);
+                            break;
+                        }
                     }
                 }
                 break;
             case 3:
-                break;
-            case 4:
-                bool nomesiguais;
+                char nome_atualizado[100];
+                int data_atualizada;
                 clear(20);
-                printf("Digite o nome do Estudante que deseja excluir:\n");
-                scanf("%s", &nome);
-                f = fopen("../estudantes.bin", "wb");
-                for (i = 0; i < quantidade_de_estudantes; i++) {
-                    nomesiguais = true;
-                    if (strlen(nome) == strlen(estudantes[i].nome)) {
-                        int i2;
-                        for (i2 = 0; i2 < strlen(nome); i2++) {
-                            if (nome[i2] != estudantes[i].nome[i2]){
-                                nomesiguais = false;
-                                break;
-                            }
+                printf("Digite o ID ou o nome do Estudante que deseja atualizar:\n");
+                scanf("%s", &id_ou_nome);
+
+                struct estudante estu_atualizado;
+
+                printf("\nDigite o nome atualizado (deixe em branco para nao mudar!):\n");
+                while ((c = getchar()) != '\n' && c != EOF);
+                scanf("%[^\n]", &estu_atualizado.nome);
+                if (comparar_string(estu_atualizado.nome, ""))
+                printf("\nDigite a data de nascimento atualizada (deixe em branco para nao mudar!):\n");
+                scanf("%s", &data);
+
+                token = strtok(data, delimitador);
+                const char *stringlegal4 = token;
+                dia = strtol(stringlegal4, &endptr, 10);
+                estu_atualizado.nascimento.dia = dia;
+                token = strtok(NULL, delimitador);
+                const char *stringlegal5 = token;
+                mes = strtol(stringlegal5, &endptr, 10);
+                estu_atualizado.nascimento.mes = mes;
+                token = strtok(NULL, delimitador);
+                const char *stringlegal6 = token;
+                ano = strtol(stringlegal6, &endptr, 10);
+                estu_atualizado.nascimento.ano = ano;
+
+                id_ou_nome_int = strtol(id_ou_nome, &endptr, 10);
+                //Atualizar a partir de um nome
+                if (*endptr != '\0') {
+                    f = fopen("../estudantes.bin", "wb");
+                    for (i = 0; i < quantidade_de_estudantes; i++) {
+                        nomesiguais = comparar_string(id_ou_nome, estudantes[i].nome);
+                        if (estudantes[i].ID == 0) {
+                            break;
+                        }
+                        if (nomesiguais == false) {
+                            fwrite(&estudantes[i], sizeof(estudantes[i]), 1, f);
+                        }
+                        else {
+                            estu_atualizado.ID = estudantes[i].ID;
+                            fwrite(&estu_atualizado, sizeof(estudantes[i]), 1, f);
                         }
                     }
-                    else {
-                        nomesiguais = false;
+                    fclose(f);
+                }
+                //Atualizar a partir de um ID
+                else {
+                    f = fopen("../estudantes.bin", "wb");
+                    for (i = 0; i < quantidade_de_estudantes; i++) {
+                        idsiguais = false;
+                        if (id_ou_nome_int == estudantes[i].ID) {
+                            idsiguais = true;
+                        }
+                        if (estudantes[i].ID == 0) {
+                            break;
+                        }
+                        if (idsiguais == false) {
+                            fwrite(&estudantes[i], sizeof(estudantes[i]), 1, f);
+                        }
+                        else {
+                            estu_atualizado.ID = estudantes[i].ID;
+                            fwrite(&estu_atualizado, sizeof(estudantes[i]), 1, f);
+                        }
                     }
+                    fclose(f);
+                }
+
+                break;
+            case 4:
+                clear(20);
+                printf("Digite o nome do Estudante que deseja excluir:\n");
+                scanf("%s", &id_ou_nome);
+                f = fopen("../estudantes.bin", "wb");
+                for (i = 0; i < quantidade_de_estudantes; i++) {
+                    nomesiguais = comparar_string(id_ou_nome, estudantes[i].nome);
                     if (estudantes[i].ID == 0) {
                         break;
                     }
@@ -139,6 +239,11 @@ void gestao_estudantes(){
                     }
                 }
                 fclose(f);
+                clear(20);
+                printf("%s excluido com sucesso!\n", id_ou_nome);
+                printf("Pressione Enter para continuar\n");
+                while ((c = getchar()) != '\n' && c != EOF);
+                scanf("%[^\n]", pausar);
                 break;
         }
         if(input == 5){
