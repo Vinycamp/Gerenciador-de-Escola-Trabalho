@@ -39,15 +39,23 @@ struct estudante {
 
 void gestao_estudantes(){
     int input = 0;
+    int opcaoinvalidaestudantes = 0;
     while (1) {
         clear(20);
-        printf("Gestao de Estudantes!\n");
+        if (opcaoinvalidaestudantes == 0) {
+            printf("Gestao de Estudantes!\n");
+        }
+        else {
+            printf("Voce digitou uma opcao invalida.\n");
+        }
         printf("Digite o numero correspondente a opcao que deseja:\n");
         printf("\n");
         printf("(1) Cadastrar Estudante   (2) Consultar Estudante\n");
         printf("(3) Atualizar Estudante   (4) Excluir Estudante\n");
         printf("(5) Sair da Gestao\n");
         scanf("%d", &input);
+        while (getchar() != '\n');
+        opcaoinvalidaestudantes = 1;
 
         // Definições de variáveis para o switch
         int i = 0, quantidade_de_estudantes = 100;
@@ -78,10 +86,34 @@ void gestao_estudantes(){
                     }
                 }
                 estudante_cadastrado.ID = estudantes[i-1].ID+1;
-                printf("Digite o nome do Estudante que deseja cadastrar:\n");
+                printf("\nDigite o nome do Estudante que deseja cadastrar:\n");
                 scanf("%s", &estudante_cadastrado.nome);
-                printf("Digite a data de nascimento do Estudante no formato DD/MM/AAAA:\n");
-                scanf("%s", &data);
+                bool formatocorreto = false;
+                char numeros[10] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
+                while (formatocorreto == false) {
+                    printf("Digite a data de nascimento do Estudante no formato DD/MM/AAAA:\n");
+                    while ((c = getchar()) != '\n' && c != EOF);
+                    scanf("%[^\n]", &data);
+                    formatocorreto = true;
+                    i = 0;
+                    while (i < 10) {
+                        if (i == 2 || i == 5) {
+                            if (data[i] != '/') {
+                                formatocorreto = false;
+                                break;
+                            }
+                        }
+                        else if (!strchr(numeros, data[i])) {
+                            formatocorreto = false;
+                            break;
+                        }
+                        i++;
+                    }
+                    if (formatocorreto == false) {
+                        clear(20);
+                        printf("Formato incorreto. Tente novamente.\n\n");
+                    }
+                }
 
                 token = strtok(data, delimitador);
                 const char *stringlegal1 = token;
@@ -106,6 +138,7 @@ void gestao_estudantes(){
                 }
                 fwrite(&estudante_cadastrado, sizeof(estudante_cadastrado), 1, f);
                 fclose(f);
+                opcaoinvalidaestudantes = 0;
                 break;
             case 2:
                 clear(20);
@@ -152,35 +185,15 @@ void gestao_estudantes(){
                         }
                     }
                 }
+                opcaoinvalidaestudantes = 0;
                 break;
             case 3:
                 char nome_atualizado[100];
                 int data_atualizada;
+                struct estudante estu_atualizado;
                 clear(20);
                 printf("Digite o ID ou o nome do Estudante que deseja atualizar:\n");
                 scanf("%s", &id_ou_nome);
-
-                struct estudante estu_atualizado;
-
-                printf("\nDigite o nome atualizado (deixe em branco para nao mudar!):\n");
-                while ((c = getchar()) != '\n' && c != EOF);
-                scanf("%[^\n]", &estu_atualizado.nome);
-                if (comparar_string(estu_atualizado.nome, ""))
-                printf("\nDigite a data de nascimento atualizada (deixe em branco para nao mudar!):\n");
-                scanf("%s", &data);
-
-                token = strtok(data, delimitador);
-                const char *stringlegal4 = token;
-                dia = strtol(stringlegal4, &endptr, 10);
-                estu_atualizado.nascimento.dia = dia;
-                token = strtok(NULL, delimitador);
-                const char *stringlegal5 = token;
-                mes = strtol(stringlegal5, &endptr, 10);
-                estu_atualizado.nascimento.mes = mes;
-                token = strtok(NULL, delimitador);
-                const char *stringlegal6 = token;
-                ano = strtol(stringlegal6, &endptr, 10);
-                estu_atualizado.nascimento.ano = ano;
 
                 id_ou_nome_int = strtol(id_ou_nome, &endptr, 10);
                 //Atualizar a partir de um nome
@@ -195,6 +208,29 @@ void gestao_estudantes(){
                             fwrite(&estudantes[i], sizeof(estudantes[i]), 1, f);
                         }
                         else {
+                            printf("\nDigite o nome atualizado (deixe em branco para nao mudar!):\n");
+                            while ((c = getchar()) != '\n' && c != EOF);
+                            scanf("%[^\n]", &estu_atualizado.nome);
+                            if (comparar_string(estu_atualizado.nome, "")) {
+                                for (int i2 = 0; i2 < strlen(estudantes[i].nome); i2++) {
+                                    estu_atualizado.nome[i2] = estudantes[i].nome[i2];
+                                }
+                            }
+                            printf("\nDigite a data de nascimento atualizada (deixe em branco para nao mudar!):\n");
+                            scanf("%s", &data);
+
+                            token = strtok(data, delimitador);
+                            const char *stringlegal4 = token;
+                            dia = strtol(stringlegal4, &endptr, 10);
+                            estu_atualizado.nascimento.dia = dia;
+                            token = strtok(NULL, delimitador);
+                            const char *stringlegal5 = token;
+                            mes = strtol(stringlegal5, &endptr, 10);
+                            estu_atualizado.nascimento.mes = mes;
+                            token = strtok(NULL, delimitador);
+                            const char *stringlegal6 = token;
+                            ano = strtol(stringlegal6, &endptr, 10);
+                            estu_atualizado.nascimento.ano = ano;
                             estu_atualizado.ID = estudantes[i].ID;
                             fwrite(&estu_atualizado, sizeof(estudantes[i]), 1, f);
                         }
@@ -216,13 +252,36 @@ void gestao_estudantes(){
                             fwrite(&estudantes[i], sizeof(estudantes[i]), 1, f);
                         }
                         else {
+                            printf("\nDigite o nome atualizado (Deixe em branco para nao mudar!):\n");
+                            while ((c = getchar()) != '\n' && c != EOF);
+                            scanf("%[^\n]", &estu_atualizado.nome);
+                            if (comparar_string(estu_atualizado.nome, "")) {
+                                for (int i2 = 0; i2 < strlen(estudantes[i].nome); i2++) {
+                                    estu_atualizado.nome[i2] = estudantes[i].nome[i2];
+                                }
+                            }
+                            printf("\nDigite a data de nascimento atualizada no formato DD/MM/AAAA (Deixe em branco para nao mudar!):\n");
+                            scanf("%s", &data);
+
+                            token = strtok(data, delimitador);
+                            const char *stringlegal4 = token;
+                            dia = strtol(stringlegal4, &endptr, 10);
+                            estu_atualizado.nascimento.dia = dia;
+                            token = strtok(NULL, delimitador);
+                            const char *stringlegal5 = token;
+                            mes = strtol(stringlegal5, &endptr, 10);
+                            estu_atualizado.nascimento.mes = mes;
+                            token = strtok(NULL, delimitador);
+                            const char *stringlegal6 = token;
+                            ano = strtol(stringlegal6, &endptr, 10);
+                            estu_atualizado.nascimento.ano = ano;
                             estu_atualizado.ID = estudantes[i].ID;
                             fwrite(&estu_atualizado, sizeof(estudantes[i]), 1, f);
                         }
                     }
                     fclose(f);
                 }
-
+                opcaoinvalidaestudantes = 0;
                 break;
             case 4:
                 clear(20);
@@ -244,6 +303,7 @@ void gestao_estudantes(){
                 printf("Pressione Enter para continuar\n");
                 while ((c = getchar()) != '\n' && c != EOF);
                 scanf("%[^\n]", pausar);
+                opcaoinvalidaestudantes = 0;
                 break;
         }
         if(input == 5){
@@ -263,7 +323,7 @@ void gestao_professores(){
         printf("(3) Atualizar Professor   (4) Excluir Professor\n");
         printf("(5) Sair da Gestao\n");
         scanf("%d", &input);
-        switch (input) {
+        switch (input){
             case 1:
                 break;
             case 2:
@@ -335,27 +395,39 @@ void gestao_turmas(){
 
 void main(){
     int input = 0;
+    int opcaoinvalida = 0;
     while (1) {
         clear(20);
-        printf("Bem-vindo ao sistema de gerenciamento da escola!\n");
+        if (opcaoinvalida == 0) {
+            printf("Bem-vindo ao sistema de gerenciamento da escola!\n");
+        }
+        else {
+            printf("Voce digitou uma opcao invalida.\n");
+        }
         printf("Digite o numero correspondente a opcao que deseja:\n");
         printf("\n");
         printf("(1) Gestao de Estudantes    (2) Gestao de Professores\n");
         printf("(3) Gestao de Disciplinas   (4) Gestao de Turmas\n");
         printf("(5) Sair do Sistema\n");
         scanf("%d", &input);
+        while (getchar() != '\n');
+        opcaoinvalida = 1;
         switch (input) {
             case 1:
                 gestao_estudantes();
+                opcaoinvalida = 0;
                 break;
             case 2:
                 gestao_professores();
+                opcaoinvalida = 0;
                 break;
             case 3:
                 gestao_disciplinas();
+                opcaoinvalida = 0;
                 break;
             case 4:
                 gestao_turmas();
+                opcaoinvalida = 0;
                 break;
         }
         if(input == 5){
