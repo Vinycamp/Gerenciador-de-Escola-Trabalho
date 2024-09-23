@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
 
@@ -14,11 +13,6 @@ struct estudante {
     char nome[100];
     struct data nascimento;
 };
-
-void limpar_buffer() {
-    int c;
-    while ((c = getchar()) != '\n' && c != EOF);
-}
 
 void clear(int n){
     for(int i = 0;i < n;i++){
@@ -41,30 +35,37 @@ void ler_estudantes(int quantidade_de_estudantes, struct estudante *estudantes) 
     if (f == NULL) {
         perror("Erro ao abrir o arquivo");
     }
-    fread(&estudantes, sizeof(struct estudante), 100, f);
+    fread(estudantes, sizeof(struct estudante), 100, f);
     fclose(f);
 }
 
-void transformar_data_em_inteiro(char data[10], char *dia, char *mes, char *ano) {
+int char_is_number(char c) {
+    char numeros[] = "0123456789";
+    for (int i = 0; i < 10; i++) {
+        if (c == numeros[i]) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+void transformar_data_em_inteiro(char data[11], char *dia, char *mes, char *ano) {
     char *token, delimitador[2] = "/";
     token = strtok(data, delimitador);
     const char *diastring = token;
-    sscanf(diastring, "%d", &dia);
+    sscanf(diastring, "%d", dia);
     token = strtok(NULL, delimitador);
     const char *messtring = token;
-    sscanf(messtring, "%d", &mes);
+    sscanf(messtring, "%d", mes);
     token = strtok(NULL, delimitador);
     const char *anostring = token;
-    sscanf(anostring, "%d", &ano);
+    sscanf(anostring, "%d", ano);
 }
 
 void cadastrar(int quantidade_de_estudantes) {
     struct estudante estudante_cadastrado;
     struct estudante estudantes[quantidade_de_estudantes];
     ler_estudantes(quantidade_de_estudantes, estudantes);
-    for (int i = 0; i < 100; i++) {
-        printf("\nEstudante %d: ID: %d, nome: %s, nascimento: %d/%d/%d", i+1, estudantes[i].ID, estudantes[i].nome, estudantes[i].nascimento.dia, estudantes[i].nascimento.mes, estudantes[i].nascimento.ano);
-    }
     clear(20);
     //definir o ID do novo estudante
     int i;
@@ -78,25 +79,20 @@ void cadastrar(int quantidade_de_estudantes) {
         novoid = 1;
     } else novoid = estudantes[i-1].ID+1;
     estudante_cadastrado.ID = novoid;
-    printf("\n\n");
-    for (int i = 0; i < 100; i++) {
-        printf("\nEstudante %d: ID: %d, nome: %s, nascimento: %d/%d/%d", i+1, estudantes[i].ID, estudantes[i].nome, estudantes[i].nascimento.dia, estudantes[i].nascimento.mes, estudantes[i].nascimento.ano);
-    }
 
     //pedir o nome do novo estudante
     char buffer[100];
     printf("\nDigite o nome do Estudante que deseja cadastrar:\n");
     fgets(buffer, sizeof(buffer), stdin);
-    for (i = 0; i < strlen(buffer); i++) {
-
+    for (i = 0; i < strlen(buffer)-1; i++) {
+        estudante_cadastrado.nome[i] = buffer[i];
     }
-    estudante_cadastrado.nome = buffer;
 
     //pedir a data de nascimento do novo estudante
     bool formatocorreto = false;
-    char data[10];
-    char numeros[10] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
+    char data[11];
     while (formatocorreto == false) {
+        data[0] = '\0';
         printf("Digite a data de nascimento do Estudante no formato DD/MM/AAAA:\n");
         fgets(data, sizeof(data), stdin);
         formatocorreto = true;
@@ -111,9 +107,11 @@ void cadastrar(int quantidade_de_estudantes) {
                 }
             }
             //olha os números
-            else if (!strchr(numeros, data[i])) {
-                formatocorreto = false;
-                break;
+            else {
+                if (char_is_number(data[i]) == 0) {
+                    formatocorreto = false;
+                    break;
+                }
             }
             i++;
         }
@@ -123,20 +121,21 @@ void cadastrar(int quantidade_de_estudantes) {
         }
     }
     int dia, mes, ano;
-    int *d, *m, *a;
-    transformar_data_em_inteiro(data, d, m, a);
+    transformar_data_em_inteiro(data, &dia, &mes, &ano);
     estudante_cadastrado.nascimento.dia = dia;
     estudante_cadastrado.nascimento.mes = mes;
     estudante_cadastrado.nascimento.ano = ano;
 
     //imprime o ID do estudante e salva no arquivo
-    printf("\n%d", estudante_cadastrado.ID);
-    printf("\n%s", estudante_cadastrado.nome);
-    printf("\n%d/%d/%d", estudante_cadastrado.nascimento.dia, estudante_cadastrado.nascimento.mes, estudante_cadastrado.nascimento.ano);
     printf("\nEstudante cadastrado no ID: %d\n", estudante_cadastrado.ID);
+    buffer[0] = '\0';
     printf("Pressione Enter para continuar\n");
-    limpar_buffer();
-    fgets(buffer, sizeof(buffer), stdin);
+    if (fgets(buffer, sizeof(buffer), stdin) != NULL) {
+        // Aqui você pode processar a entrada, se necessário
+        printf("Voce pressionou Enter.\n");
+    } else {
+        printf("Erro ao ler a entrada.\n");
+    }
     FILE *f;
     f = fopen("../estudantes.bin", "ab");
     if (f == NULL) {
@@ -176,7 +175,7 @@ void consultar(int quantidade_de_estudantes) {
             }
         }
     }
-    //Consultar a partir de um ID
+        //Consultar a partir de um ID
     else {
         for (int i = 0; i < (sizeof(estudantes) / sizeof(estudantes[0])); i++) {
             //quando chegar em um ID inválido, quer dizer que acabou a lista de estudantes e o programa sai do loop
@@ -227,7 +226,7 @@ void atualizar(int quantidade_de_estudantes) {
                 fwrite(&estudantes[i], sizeof(estudantes[i]), 1, f);
             }
 
-            //escrever no arquivo as novas informações do estudante com o nome escolhido
+                //escrever no arquivo as novas informações do estudante com o nome escolhido
             else {
                 //atualizar o nome do estudante
                 printf("\nDigite o nome atualizado (deixe em branco para nao mudar!):\n");
@@ -267,7 +266,7 @@ void atualizar(int quantidade_de_estudantes) {
                                 break;
                             }
                         }
-                        //olha os números
+                            //olha os números
                         else if (!strchr(numeros, data[i])) {
                             formatocorreto = false;
                             break;
@@ -285,7 +284,7 @@ void atualizar(int quantidade_de_estudantes) {
                     break;
                 }
 
-                //caso o usuário NÃO deixar em branco, atualizar
+                    //caso o usuário NÃO deixar em branco, atualizar
                 else {
                     int dia, mes, ano;
                     int *d, *m, *a;
@@ -299,7 +298,7 @@ void atualizar(int quantidade_de_estudantes) {
         }
         fclose(f);
     }
-    //Atualizar a partir de um ID
+        //Atualizar a partir de um ID
     else {
         f = fopen("../estudantes.bin", "wb");
         //passar por cada estudante
@@ -314,7 +313,7 @@ void atualizar(int quantidade_de_estudantes) {
                 fwrite(&estudantes[i], sizeof(estudantes[i]), 1, f);
             }
 
-            //escrever no arquivo as novas informações do estudante com o nome escolhido
+                //escrever no arquivo as novas informações do estudante com o nome escolhido
             else {
                 //atualizar o nome do estudante
                 printf("\nDigite o nome atualizado (deixe em branco para nao mudar!):\n");
@@ -450,10 +449,10 @@ void gestao_estudantes(){
         printf("(1) Cadastrar Estudante   (2) Consultar Estudante\n");
         printf("(3) Atualizar Estudante   (4) Excluir Estudante\n");
         printf("(5) Sair da Gestao\n");
-        if (scanf("%d", &input) != 1 || input > 5 || input < 1) {
+        fgets(buffer, sizeof(buffer), stdin);
+        if (sscanf(buffer, "%d", &input) != 1 || input > 5 || input < 1) {
             opcaoinvalida = 1;
         }
-        limpar_buffer();
 
         // Definições de variáveis para o switch
         int quantidade_de_estudantes = 100;
@@ -577,10 +576,10 @@ void main(){
         printf("(1) Gestao de Estudantes    (2) Gestao de Professores\n");
         printf("(3) Gestao de Disciplinas   (4) Gestao de Turmas\n");
         printf("(5) Sair do Sistema\n");
-        if (scanf("%d", &input) != 1 || input > 5 || input < 1) {
+        fgets(buffer, sizeof(buffer), stdin);
+        if (sscanf(buffer,"%d", &input) != 1 || input > 5 || input < 1) {
             opcaoinvalida = 1;
         }
-        limpar_buffer();
         switch (input) {
             case 1:
                 gestao_estudantes();
