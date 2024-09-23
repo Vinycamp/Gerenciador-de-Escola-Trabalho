@@ -15,7 +15,8 @@
 					"source" : ".",
 					"targetIndexes" : 
 					[
-						0
+						0,
+						1
 					]
 				}
 			],
@@ -30,7 +31,8 @@
 					"name" : "Projeto_escola",
 					"targetIndexes" : 
 					[
-						0
+						0,
+						1
 					]
 				}
 			],
@@ -41,6 +43,13 @@
 					"id" : "GERENCIADOR_ESCOLA::@6890427a1f51a3e7e1df",
 					"jsonFile" : "target-GERENCIADOR_ESCOLA-Debug-bfb631c9a6513d249033.json",
 					"name" : "GERENCIADOR_ESCOLA",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "TESTE.C::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-TESTE.C-Debug-c0336c2a4192c7d39500.json",
+					"name" : "TESTE.C",
 					"projectIndex" : 0
 				}
 			]

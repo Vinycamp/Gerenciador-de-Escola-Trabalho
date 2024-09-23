@@ -73,6 +73,39 @@ build GERENCIADOR_ESCOLA.exe: C_EXECUTABLE_LINKER__GERENCIADOR_ESCOLA_Debug CMak
   TARGET_IMPLIB = libGERENCIADOR_ESCOLA.dll.a
   TARGET_PDB = GERENCIADOR_ESCOLA.exe.dbg
 
+# =============================================================================
+# Object build statements for EXECUTABLE target TESTE.C
+
+
+#############################################
+# Order-only phony target for TESTE.C
+
+build cmake_object_order_depends_target_TESTE.C: phony || CMakeFiles/TESTE.C.dir
+
+build CMakeFiles/TESTE.C.dir/teste.c.obj: C_COMPILER__TESTE.2eC_unscanned_Debug C$:/Users/vinis/CLionProjects/Escola/teste.c || cmake_object_order_depends_target_TESTE.C
+  DEP_FILE = CMakeFiles\TESTE.C.dir\teste.c.obj.d
+  FLAGS = -g -std=gnu11 -fdiagnostics-color=always
+  OBJECT_DIR = CMakeFiles\TESTE.C.dir
+  OBJECT_FILE_DIR = CMakeFiles\TESTE.C.dir
+
+
+# =============================================================================
+# Link build statements for EXECUTABLE target TESTE.C
+
+
+#############################################
+# Link the executable TESTE.C.exe
+
+build TESTE.C.exe: C_EXECUTABLE_LINKER__TESTE.2eC_Debug CMakeFiles/TESTE.C.dir/teste.c.obj
+  FLAGS = -g
+  LINK_LIBRARIES = -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32
+  OBJECT_DIR = CMakeFiles\TESTE.C.dir
+  POST_BUILD = cd .
+  PRE_LINK = cd .
+  TARGET_FILE = TESTE.C.exe
+  TARGET_IMPLIB = libTESTE.C.dll.a
+  TARGET_PDB = TESTE.C.exe.dbg
+
 
 #############################################
 # Utility command for edit_cache
@@ -101,6 +134,8 @@ build rebuild_cache: phony CMakeFiles/rebuild_cache.util
 
 build GERENCIADOR_ESCOLA: phony GERENCIADOR_ESCOLA.exe
 
+build TESTE.C: phony TESTE.C.exe
+
 # =============================================================================
 # Folder targets.
 
@@ -109,7 +144,7 @@ build GERENCIADOR_ESCOLA: phony GERENCIADOR_ESCOLA.exe
 #############################################
 # Folder: C:/Users/vinis/CLionProjects/Escola/cmake-build-debug
 
-build all: phony GERENCIADOR_ESCOLA.exe
+build all: phony GERENCIADOR_ESCOLA.exe TESTE.C.exe
 
 # =============================================================================
 # Built-in targets
