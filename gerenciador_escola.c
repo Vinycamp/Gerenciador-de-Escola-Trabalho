@@ -26,6 +26,7 @@ void gestao(char nome_da_gestao[12]){
         printf("(1) Cadastrar %s   (2) Consultar %s\n", nome_da_gestao_singular, nome_da_gestao_singular);
         printf("(3) Atualizar %s   (4) Excluir %s\n", nome_da_gestao_singular, nome_da_gestao_singular);
         printf("(5) Sair da Gestao\n");
+        buffer[0] = '\0';
         readinput(buffer, 0);
         if (sscanf(buffer, "%d", &input) != 1 || input > 5 || input < 1) {
             opcaoinvalida = 1;
@@ -73,6 +74,7 @@ void main(){
         printf("(1) Gestao de Estudantes    (2) Gestao de Professores\n");
         printf("(3) Gestao de Disciplinas   (4) Gestao de Turmas\n");
         printf("(5) Sair do Sistema\n");
+        buffer[0] = '\0';
         readinput(buffer, 0);
         if (sscanf(buffer,"%d", &input) != 1 || input > 5 || input < 1) {
             opcaoinvalida = 1;
