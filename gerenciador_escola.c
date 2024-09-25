@@ -58,6 +58,7 @@ void gestao(char nome_da_gestao[12]){
 void main(){
     char buffer[100];
     int input;
+
     int opcaoinvalida = 0;
     while (1) {
         clear(20);
